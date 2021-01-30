@@ -3,8 +3,10 @@
 // Licensed under the MIT License.
 
 use std::ffi::{CStr, CString};
+use std::path::Path;
 use std::time::SystemTime;
 use tectonic_bridge_core::{CoreBridgeLauncher, EngineAbortedError, IoEventBackend};
+use tectonic_errors::anyhow::anyhow;
 
 use crate::errors::Result;
 use crate::io::IoStack;
@@ -77,6 +79,12 @@ impl XdvipdfmxEngine {
                 .as_ref()
                 .map_or(paperspec_default.as_ptr(), |s| s.as_ptr()),
         };
+
+        if !Path::new(dvi).exists() {
+            return Err(anyhow!(
+                "xdv file not found: this may mean your document is empty"
+            ).into());
+        }
 
         let cdvi = CString::new(dvi)?;
         let cpdf = CString::new(pdf)?;
